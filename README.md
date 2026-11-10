@@ -7,8 +7,49 @@ configured channels. The first use case is LinkedIn content for Pixboost, with
 YouTube transcripts as a potential source; the tool is not limited to technical
 content.
 
-**Status:** Planning. The commands and configuration below describe the intended
-interface and are not implemented yet.
+**Status:** Planning, with an experimental LinkedIn draft CLI. The Socialize
+commands and configuration below describe the intended interface and are not
+implemented yet.
+
+## LinkedIn draft experiment
+
+This branch contains a small Go CLI that attempts to create a static,
+unpublished draft using LinkedIn's older `/v2/ugcPosts` API and its `DRAFT`
+lifecycle state. It looks up the authenticated member using OpenID Connect
+`/v2/userinfo` and sets that person as the author, not the app. A published
+post would be attributed to that person, though the exact presentation and
+whether the app is shown are determined by LinkedIn.
+
+**This is an experiment:** access to draft creation, and whether API-created
+drafts appear in LinkedIn's UI, have not been verified. LinkedIn may reject
+the request or require access beyond a newly created app's permissions. The
+tool never falls back to publishing a public post. The `PUBLIC` visibility in
+the request is part of the post payload; the requested lifecycle state is
+always `DRAFT`.
+
+Prerequisites:
+
+- Go 1.22 or later.
+- A LinkedIn developer app with access to **Share on LinkedIn** and **Sign In
+  with LinkedIn using OpenID Connect**, subject to LinkedIn's current product
+  and approval requirements.
+- A member OAuth access token for the account that should be the author, with
+  `w_member_social`, `openid`, and `profile` scopes. Obtain it through
+  LinkedIn's OAuth flow or developer tools; this experiment does not implement
+  OAuth or token refresh.
+
+Set the token in your environment without committing it, then run:
+
+```sh
+export LINKEDIN_ACCESS_TOKEN='your-member-access-token'
+go run ./cmd/linkedin-draft
+```
+
+The CLI prints the member URN and post ID if LinkedIn accepts the request.
+Check your LinkedIn account to see whether it appears as a draft. If the
+request times out or returns an ambiguous result, check the account before
+retrying; the request may have been accepted. Do not share the token or commit
+it to the repository.
 
 ## Intended workflow
 
